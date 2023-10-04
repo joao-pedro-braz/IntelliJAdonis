@@ -1,0 +1,17 @@
+EdgeFile:PartialSelfClosingTag.edge
+  EdgeStatementsImpl(STATEMENTS)
+    EdgeHTMLContentImpl([Edge] HTML_CONTENT)
+      PsiElement([Edge] HTML_CONTENT)('<div>\n')
+    EdgeTagWrapperImpl(TAG_WRAPPER)
+      EdgeSelfCloseBlockTagImpl(SELF_CLOSE_BLOCK_TAG)
+        EdgePsiElementImpl([Edge] SELF_CLOSING_TAG)
+          PsiElement([Edge] SELF_CLOSING_TAG)('@!')
+        EdgeTagNameImpl(TAG_NAME)
+          EdgeIdentifierImpl([Edge] IDENTIFIER)
+            PsiElement([Edge] IDENTIFIER)('component')
+        EdgeOpenParenthesesImpl([Edge] OPEN_PARENTHESES)
+          PsiElement([Edge] OPEN_PARENTHESES)('(')
+        PsiErrorElement:Expected ')'.
+          <empty list>
+    EdgeHTMLContentImpl([Edge] HTML_CONTENT)
+      PsiElement([Edge] HTML_CONTENT)(''components/button',\n<div>')

@@ -1,18 +1,59 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <id>com.github.joaopedrobraz.intellijadonis</id>
-    <name>IntelliJAdonis Template</name>
+    <name>AdonisJS</name>
     <vendor>joao-pedro-braz</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.xml</depends>
+    <depends>JavaScript</depends>
 
-    <resource-bundle>messages.MyBundle</resource-bundle>
+    <resource-bundle>messages.AdonisBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.joaopedrobraz.intellijadonis.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+        <fileType
+                name="Edge"
+                implementationClass="com.github.joaopedrobraz.intellijadonis.file.EdgeFileType"
+                fieldName="INSTANCE"
+                language="Edge"
+                extensions="edge"/>
+        <lang.parserDefinition language="Edge"
+                               implementationClass="com.github.joaopedrobraz.intellijadonis.parsing.EdgeParseDefinition"/>
+        <lang.ast.factory language="Edge"
+                          implementationClass="com.github.joaopedrobraz.intellijadonis.parsing.EdgeAstFactory"/>
+        <lang.fileViewProviderFactory language="Edge"
+                                      implementationClass="com.github.joaopedrobraz.intellijadonis.file.EdgeFileViewProviderFactory"/>
+        <iconProvider implementation="com.github.joaopedrobraz.intellijadonis.file.EdgeIconProvider"/>
+        <lang.syntaxHighlighter language="Edge"
+                                implementationClass="com.github.joaopedrobraz.intellijadonis.EdgeHighlighter"/>
+        <editorHighlighterProvider filetype="Edge"
+                                   implementationClass="com.github.joaopedrobraz.intellijadonis.file.EdgeHighlighterProvider"/>
+        <lang.psiStructureViewFactory language="Edge"
+                                      implementationClass="com.github.joaopedrobraz.intellijadonis.structure.EdgeStructureViewFactory"/>
+        <liveTemplateContext contextId="Edge"
+                             implementation="com.github.joaopedrobraz.intellijadonis.editor.templates.EdgeTemplateContextType"/>
+        <multiHostInjector
+                implementation="com.github.joaopedrobraz.intellijadonis.lang.injection.EdgeJavaScriptContentInjector"/>
+        <completion.contributor language="HTML"
+                                order="first, before xml"
+                                id="edge-html"
+                                implementationClass="com.github.joaopedrobraz.intellijadonis.completion.EdgeKeywordCompletionContributor"/>
+        <completion.contributor language="Edge"
+                                order="first, before edge-html"
+                                id="edge"
+                                implementationClass="com.github.joaopedrobraz.intellijadonis.completion.EdgeKeywordCompletionContributor"/>
+        <lang.foldingBuilder language="Edge"
+                             implementationClass="com.github.joaopedrobraz.intellijadonis.editor.folding.EdgeFoldingBuilder"/>
+        <lang.commenter language="Edge"
+                        implementationClass="com.github.joaopedrobraz.intellijadonis.editor.comments.EdgeCommenter"/>
+        <braceMatcher filetype="Edge"
+                      implementationClass="com.github.joaopedrobraz.intellijadonis.editor.braces.EdgeBraceMatcher"/>
+        <xml.zenCodingGenerator
+                implementation="com.github.joaopedrobraz.intellijadonis.editor.templates.EdgeEmmetGenerator"/>
+        <lang.formatter language="Edge"
+                        implementationClass="com.github.joaopedrobraz.intellijadonis.format.EdgeFormattingModelBuilder"/>
+        <codeFoldingOptionsProvider
+                instance="com.github.joaopedrobraz.intellijadonis.config.EdgeFoldingOptionsProvider"/>
     </extensions>
-
-    <applicationListeners>
-        <listener class="com.github.joaopedrobraz.intellijadonis.listeners.MyApplicationActivationListener" topic="com.intellij.openapi.application.ApplicationActivationListener"/>
-    </applicationListeners>
 </idea-plugin>

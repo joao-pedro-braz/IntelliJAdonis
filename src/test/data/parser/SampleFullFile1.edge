@@ -1,0 +1,259 @@
+<div
+  class="flex-auto flex flex-col overflow-auto w-full bg-white rounded-lg border border-primary border-opacity-10"
+  x-data="{ dirty: false, submit: false, /** @type{Array<number>} */selection: [] }"
+  x-init="
+	const onSelectionChange = (/** @type{Array<number>} */selection) => {
+		$el.querySelectorAll(`[data-role='actions'] span`).forEach((node) => {
+			const selectable = node.getAttribute('data-selectable')
+			const shouldSelect = selection.length > 0 && (selection.length === 1 ? selectable === 'single' : selectable === 'multiple')
+			if (shouldSelect) {
+				node.classList.add('cursor-pointer', 'hover:bg-primary', 'hover:bg-opacity-10')
+				node.classList.remove('text-gray-400')
+			} else {
+				node.classList.add('text-gray-400')
+				node.classList.remove('cursor-pointer', 'hover:bg-primary', 'hover:bg-opacity-10')
+			}
+		})
+	}
+	// Bootstrap available actions
+	onSelectionChange(selection)
+	$watch('selection', onSelectionChange)">
+  <div class="flex justify-between border-b border-primary border-opacity-10 sticky top-0 bg-white"
+       data-role="toolbar">
+    <div class="flex">
+      <div class="flex items-center justify-center w-12 border-r py-2 mr-2">
+                <span :class="dirty && 'bg-yellow-300'" @click="submit = true"
+                      class="flex items-center h-6 aspect-square p-1 cursor-pointer hover:bg-primary hover:bg-opacity-10 rounded-full"
+                      data-role="refresh">
+                    {{{ await resource('images/refresh.svg') }}}
+                </span>
+
+      </div>
+
+      <div class="flex items-center ml-1 gap-1" data-role="actions">
+                <span
+                  class="flex items-center h-6 aspect-square p-1 cursor-pointer hover:bg-primary hover:bg-opacity-10 rounded-full"
+                  data-selectable="multiple">
+                    {{{ await resource('images/edit.svg') }}}
+                </span>
+
+        <span
+          class="flex items-center h-6 aspect-square p-1 cursor-pointer hover:bg-primary hover:bg-opacity-10 rounded-full"
+          data-selectable="multiple">
+                    {{{ await resource('images/remove.svg') }}}
+                </span>
+
+        @if($slots.actions)
+        {{{ await $slots.actions() }}}
+        @endif
+{{-- hello --}}
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 pr-4">
+            <span
+              class="flex items-center h-6 aspect-square p-1 cursor-pointer hover:bg-primary hover:bg-opacity-10 rounded-full">
+                {{{ await resource('images/search.svg') }}}
+            </span>
+
+      <span
+        class="flex items-center h-6 aspect-square p-1 cursor-pointer hover:bg-primary hover:bg-opacity-10 rounded-full">
+                {{{ await resource('images/printer.svg') }}}
+            </span>
+
+
+      <div class="flex flex-col justify-center text-sm text-right text-gray-500 leading-3 ml-2">
+        <small>Registros disponíveis: {{ data.length }}</small>
+        <small>Última atualização: {{ fetchedAt }}</small>
+      </div>
+    </div>
+
+  </div>
+
+  <form _="init set :previousScrollTop to -1 then make a FormData from me called :initialFormData end
+    on input from <input /> in me
+        make a FormData from me called currentFormData
+        if JSON.stringify(Object.fromEntries(currentFormData)) != JSON.stringify(Object.fromEntries(:initialFormData))
+            trigger dirty
+        else
+            trigger pristine
+        end
+    on scrollend(scroll)
+        set scrollDirection to my scrollTop - :previousScrollTop
+        if scrollDirection > 0 and my scrollHeight - my offsetHeight <= my scrollTop + 10
+            trigger refresh
+        end
+        set :previousScrollTop to my scrollTop" class="overflow-auto h-full" hx-get="{{ refreshEndpoint }}"
+        hx-trigger="refresh"
+        x-effect="submit && $el.submit()">
+    <table _="init set :sortCount to 1
+            on clearFilter
+                put `` into <[data-role='filter'] />'s value
+                trigger input on <[data-role='filter']/> end
+            on clearSort
+                set :sortCount to 1
+                repeat in <[data-role='sort-index']/>
+                    set its innerHTML to ``
+                end
+                add .hidden to <[data-role='sort-icon']/>
+                remove .hidden from <th [data-role='sort-icon']:nth-child(1)/>
+                put 0 into <[data-role='sorter'] input/>'s @value
+                trigger input on <[data-role='sorter'] input/> end
+            on sort(sender, count)
+                if count == 1
+                    repeat in <[data-role='sort-index']/> in sender
+                        put :sortCount into it
+                    end
+                    increment :sortCount
+                else if count == 0
+                    set sortedValue to (first <span [data-role='sort-index']/> in sender).innerHTML as Number
+                    repeat in <span [data-role='sort-index']/>
+                        set value to (its innerHTML as Number)
+                        if its parentElement's parentElement == sender
+                            set its innerHTML to ``
+                        else if value > sortedValue
+                            put value - 1 into it
+                        end
+                    end
+                    decrement :sortCount
+                end
+                add .hidden to <[data-role='sort-icon']/> in sender
+                remove .hidden from <[data-index=`${count}`]/> in sender"
+           class="border-collapse table-auto w-full text-sm">
+      <thead class="sticky top-0 bg-white">
+      <tr class="shadow">
+        <th
+          class="font-medium py-1 w-12 relative after:content-[''] after:border-r after:absolute after:right-[0px] after:top-0 after:h-full min-w-[48px]">
+          <div class="flex flex-col justify-center items-center">
+                            <span _="on click trigger clearFilter"
+                                  class="flex items-center h-6 p-[0.1rem] aspect-square cursor-pointer hover:bg-primary hover:bg-opacity-10 rounded-full">
+                                <span class="w-4 h-2">
+                                    {{{ await resource('images/close.svg') }}}
+                                </span>
+
+                                {{{ await resource('images/funnel.svg') }}}
+                            </span>
+
+            <span _="on click trigger clearSort"
+                  class="flex items-center h-6 p-[0.1rem] aspect-square cursor-pointer hover:bg-primary hover:bg-opacity-10 rounded-full">
+                                <span class="w-4 h-2">
+                                    {{{ await resource('images/close.svg') }}}
+                                </span>
+
+                                {{{ await resource('images/arrow-up-down.svg') }}}
+                            </span>
+          </div>
+        </th>
+
+        @each((column, i) in columns)
+        <th _="
+                    on resize(deltaX)
+                        set my *width to `${me.offsetWidth + deltaX}px`
+                        set my *minWidth to my *width
+                    on draggingBlur
+                        set my *minWidth to ''"
+            class="font-medium text-left hover:bg-primary hover:bg-opacity-10 leading-10 relative after:content-[''] after:border-r after:absolute after:right-0 after:top-0 after:h-full after:last-of-type:hidden">
+          <div class="flex items-stretch justify-between">
+            <div class="relative w-full">
+              @set('tableId', app.helpers.cuid())
+
+              <input _="init set :icon to <label span/> in my parentElement then set :icon's *opacity to 0% unless my value == ''
+                                on focus
+                                    transition the :icon's opacity to 0% over 0.05 seconds
+                                on blur
+                                    transition the :icon's opacity to 100% over 0.05 seconds unless my value != ``"
+                     class="peer h-full w-full bg-transparent px-3 pt-5 text-base font-sans font-normal transition-all focus:outline-0 outline-none min-w-[100px]"
+                     data-role="filter"
+                     id="{{ tableId }}" name="filter-{{ column['key'] }}" placeholder=" " />
+              <label
+                class="focus:outline-0 pointer-events-none absolute pl-4 left-0 -top-0 flex h-full w-full select-none text-[11px] font-normal transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:leading-[3.75] peer-focus:text-[11px] peer-focus:pb-3 peer-disabled:text-transparent"
+                for="{{ tableId }}">
+                {{ column['name'] }}
+
+                <span class="w-3 h-3 text-gray-400 relative self-center ml-1">
+                  {{{ await resource('images/pencil.svg') }}}
+                </span>
+              </label>
+            </div>
+
+            <span _="
+                            on click
+                                set input to first <input/> in me
+                                set count to @value of input
+                                increment count
+                                set count to it mod 3
+                                put count into @value of input
+                                trigger sort(sender: me, count: count)
+                                trigger input on <input/> in me
+                            end"
+                  class="cursor-pointer inline-flex items-center {{{ i < columns.length - 1 ? 'mr-2' : 'mr-4' }}}"
+                  data-role="sorter">
+                                <span class="w-4 h-4 text-gray-800 relative">
+                                    <small class="absolute bottom-0 right-0" data-role="sort-index"></small>
+
+                                    <span class="text-gray-400" data-index="0" data-role="sort-icon">
+                                        {{{ await resource('images/arrow-up-down.svg') }}}
+                                    </span>
+
+                                    <span class="hidden" data-index="1" data-role="sort-icon">
+                                        {{{ await resource('images/arrow-up.svg') }}}
+                                    </span>
+
+                                    <span class="hidden" data-index="2" data-role="sort-icon">
+                                        {{{ await resource('images/arrow-down.svg') }}}
+                                    </span>
+                                </span>
+                                <input class="hidden" name="sort-{{ column['key'] }}" value="0">
+                            </span>
+
+            @if(i < columns.length - 1)
+            <span _="init set :dragging to false
+                        on every mousedown(target) from body
+                            set :dragging to false
+                            if target == me
+                                set :dragging to true
+                            end
+                        on every mouseup[:dragging] from body
+                            set :dragging to false
+                        on every mousemove(movementX)[:dragging] from body
+                            trigger resize(deltaX: movementX) end
+                        "
+                  class="min-w-[8px] max-w-[0px] cursor-col-resize absolute -right-[4px] top-0 bottom-0 z-10"></span>
+            @endif
+          </div>
+        </th>
+        @end
+      </tr>
+      </thead>
+
+      <tbody
+        x-data="{ multipleSelectionTargetIndex: -1 }"
+        @mousedown="($event.ctrlKey || $event.shiftKey) && $event.preventDefault()"
+        @keydown.ctrl.a.prevent="const newSelection = []
+          $el.querySelectorAll('tr').forEach((it, index) => {
+            newSelection.push(index)
+            it.classList.add('bg-primary')
+          })
+          selection = [...newSelection]"
+        @click.prevent="console.log($event.target)"
+        class="overflow-auto"
+        tabindex="0">
+      @each((row, index) in data)
+      <tr data-index="{{ index }}" class="bg-opacity-5 hover:bg-primary hover:bg-opacity-10" tabindex="0">
+        <th class="border-b border-b-slate-200 border-r border-r-slate-100 py-3 text-slate-500 w-12"
+            scope="row">
+          {{ index + 1}}
+        </th>
+
+        @each(column in columns)
+        <td
+          class="border-b border-b-slate-200 border-r border-r-slate-100 py-3 px-5 text-slate-500 border-collapse bg-clip-padding max-w-0 overflow-hidden whitespace-nowrap">
+          {{ row[column['key']] }}
+        </td>
+        @end
+      </tr>
+      @end
+      </tbody>
+    </table>
+  </form>
+</div>
