@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templateSet group="Edge">
+    <template name="each" value="@each($ELEMENT$ in $ARRAY$)&#10;$END$&#10;@endeach" description="Edge each block" toReformat="true">
+        <variable name="ARRAY" expression="" defaultValue="" alwaysStopAt="true"/>
+        <variable name="ELEMENT" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="Edge" value="true"/>
+        </context>
+    </template>
+    <template name="eachi" value="@each(($ELEMENT$, $INDEX$) in $ARRAY$)&#10;$END$&#10;@endeach" description="Edge each with index block" toReformat="true">
+        <variable name="ARRAY" expression="" defaultValue="" alwaysStopAt="true"/>
+        <variable name="ELEMENT" expression="" defaultValue="" alwaysStopAt="true"/>
+        <variable name="INDEX" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="Edge" value="true"/>
+        </context>
+    </template>
+    <template name="set" value="@set($KEY$, $VALUE$)$END$" description="Edge set tag" toReformat="true">
+        <variable name="KEY" expression="" defaultValue="" alwaysStopAt="true"/>
+        <variable name="VALUE" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="Edge" value="true"/>
+        </context>
+    </template>
+</templateSet>

@@ -28,7 +28,7 @@ enum class EdgeValidTags(val tagName: String) {
 
     companion object {
         @JvmField
-        val ALL_VALID_TAGS = listOf(
+        val ALL_VALID_TAGS = setOf(
             COMPONENT,
             DEBUGGER,
             EACH,
@@ -54,7 +54,7 @@ enum class EdgeValidTags(val tagName: String) {
         )
 
         @JvmField
-        val SEEKABLE_TAGS = listOf(
+        val SEEKABLE_TAGS = setOf(
             COMPONENT,
             EACH,
             ELSEIF,
@@ -71,7 +71,7 @@ enum class EdgeValidTags(val tagName: String) {
         )
 
         @JvmField
-        val BLOCK_LEVEL_TAGS = listOf(
+        val BLOCK_LEVEL_TAGS = setOf(
             COMPONENT,
             EACH,
             IF,
@@ -81,7 +81,7 @@ enum class EdgeValidTags(val tagName: String) {
         )
 
         @JvmField
-        val END_TAGS = listOf(
+        val END_TAGS = setOf(
             END,
             END_COMPONENT,
             END_EACH,
@@ -90,7 +90,14 @@ enum class EdgeValidTags(val tagName: String) {
             END_SLOT,
         )
 
-        const val LARGEST_TAG_SIZE = 12; // endcomponent
+        @JvmField
+        val MATCHING_END_TAG_PAIRS = mapOf(
+            Pair(COMPONENT, setOf(END, END_COMPONENT)),
+            Pair(SECTION, setOf(END, END_SECTION)),
+            Pair(EACH, setOf(END, END_EACH)),
+            Pair(IF, setOf(END, END_IF)),
+            Pair(SLOT, setOf(END, END_SLOT)),
+        )
 
         @JvmStatic
         fun fromString(value: String): EdgeValidTags? {

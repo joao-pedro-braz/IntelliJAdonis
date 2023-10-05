@@ -33,6 +33,7 @@
                                       implementationClass="com.github.joaopedrobraz.intellijadonis.structure.EdgeStructureViewFactory"/>
         <liveTemplateContext contextId="Edge"
                              implementation="com.github.joaopedrobraz.intellijadonis.editor.templates.EdgeTemplateContextType"/>
+        <defaultLiveTemplates file="liveTemplates/Edge"/>
         <multiHostInjector
                 implementation="com.github.joaopedrobraz.intellijadonis.lang.injection.EdgeJavaScriptContentInjector"/>
         <completion.contributor language="HTML"

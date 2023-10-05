@@ -16,4 +16,8 @@ class EdgeParserFreeFormTest : EdgeParserTest() {
     fun testEachTag() = doTest(true)
 
     fun testSwallowNewLine() = doTest(true)
+
+    fun testIfElseIfElseTag() = doTest(true)
+
+    fun testClosingTagErrors() = doTest(true)
 }

@@ -1,4 +1,3 @@
-// Copyright 2000-2020 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.github.joaopedrobraz.intellijadonis.parsing
 
 import com.intellij.lexer.Lexer
@@ -55,15 +54,6 @@ abstract class EdgeLexerTest : PlatformLiteFixture() {
                 assertEquals(tokenContent[i], _tokens[i].elementContent)
             }
             assertEquals(tokenContent.size, _tokens.size)
-        }
-
-        /**
-         * Convenience method for validating a specific token in this TokenizerResult
-         */
-        fun shouldBeToken(tokenPosition: Int, tokenType: IElementType?, tokenContent: String?) {
-            val token = _tokens[tokenPosition]
-            assertEquals(tokenType, token.elementType)
-            assertEquals(tokenContent, token.elementContent)
         }
     }
 }

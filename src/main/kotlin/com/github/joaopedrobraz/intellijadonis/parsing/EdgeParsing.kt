@@ -52,6 +52,11 @@ class EdgeParsing(private val builder: PsiBuilder) {
             HTML_CONTENT,
         )
 
+        val OPEN_TAGS_EXCEPTION_SET = setOf(
+            EdgeValidTags.ELSEIF,
+            EdgeValidTags.ELSE,
+        )
+
         const val ABORT = false
         const val CONTINUE = true
     }
@@ -146,13 +151,22 @@ class EdgeParsing(private val builder: PsiBuilder) {
                 val tagWrapper = builder.mark()
                 openTagWrappers++
 
-                val (result, isOpenTag) = parseOpenTag(builder)
-                if (isOpenTag)
+                val (result, identifier) = parseOpenTag(builder)
+                if (identifier.isPresent && !EdgeValidTags.END_TAGS.any { it.matches(identifier.get()) })
                     return result.let {
                         if (it) {
                             if (builder.latestDoneMarker?.tokenType == OPEN_BLOCK_TAG) {
                                 parseProgram(builder)
-                                parseCloseTag(builder)
+                                // "if" tags might have several "elseif" tags and a final "else" tag
+                                if (EdgeValidTags.IF.matches(identifier.get())) {
+                                    while (true) {
+                                        if (!parseElseIfTag(builder)) break
+                                        parseProgram(builder)
+                                    }
+                                    if (parseElseTag(builder))
+                                        parseProgram(builder)
+                                }
+                                parseCloseTag(builder, identifier.get())
                             }
                             tagWrapper.done(TAG_WRAPPER)
                             openTagWrappers--
@@ -179,10 +193,6 @@ class EdgeParsing(private val builder: PsiBuilder) {
             }
         }
 
-        if (tokenType == HTML_CONTENT) return parseHTMLContent(builder)
-
-        if (tokenType == WHITE_SPACE) return parseWhiteSpace(builder)
-
         if (tokenType == OPEN_CURLY_BRACES) return parseCurlyBraces(builder)
 
         if (tokenType == ESCAPED_OPEN_CURLY_BRACES) return parseEscapedCurlyBraces(builder)
@@ -192,6 +202,12 @@ class EdgeParsing(private val builder: PsiBuilder) {
         if (tokenType == ESCAPED_OPEN_RAW_CURLY_BRACES) return parseEscapedRawCurlyBraces(builder)
 
         if (tokenType == OPEN_COMMENT) return parseComment(builder)
+
+        if (tokenType == HTML_CONTENT) return parseLeafToken(builder, HTML_CONTENT)
+
+        if (tokenType == WHITE_SPACE) return parseLeafToken(builder, WHITE_SPACE)
+
+        if (tokenType == COMMENT_CONTENT) return parseLeafToken(builder, COMMENT_CONTENT)
 
         return false
     }
@@ -239,20 +255,21 @@ class EdgeParsing(private val builder: PsiBuilder) {
      *   : TAG TAG_IDENTIFIER tagContent?
      * ;
      */
-    private fun parseOpenTag(builder: PsiBuilder): Pair<Boolean, Boolean> {
-        val isOpenTag = true
-
+    private fun parseOpenTag(builder: PsiBuilder): Pair<Boolean, Optional<String>> {
         val marker = builder.mark()
 
         if (!parseLeafToken(builder, TAG)) {
             marker.drop()
-            return Pair(ABORT, isOpenTag)
+            return Pair(ABORT, Optional.empty())
         }
 
         val identifier = parseTagIdentifier(builder)
         if (identifier.isEmpty) {
             marker.drop()
-            return Pair(CONTINUE, isOpenTag)
+            return Pair(CONTINUE, identifier)
+        } else if (OPEN_TAGS_EXCEPTION_SET.any { it.matches(identifier.get()) }) {
+            marker.rollbackTo()
+            return Pair(ABORT, Optional.empty())
         }
 
         val isSeekable = EdgeValidTags.SEEKABLE_TAGS.firstOrNull { it.matches(identifier.get()) } != null
@@ -262,16 +279,72 @@ class EdgeParsing(private val builder: PsiBuilder) {
         // Seekable tags must have content.
         if (isSeekable && !parseTagContent(builder, identifier.get())) {
             marker.drop()
-            return Pair(CONTINUE, isOpenTag)
+            return Pair(CONTINUE, identifier)
         }
 
         if (EdgeValidTags.END_TAGS.any { it.matches(identifier.get()) }) {
             marker.drop()
-            return Pair(CONTINUE, isOpenTag.not())
+            return Pair(CONTINUE, identifier)
         }
 
         marker.done(if (isBlockLevel) OPEN_BLOCK_TAG else INLINE_TAG)
-        return Pair(CONTINUE, isOpenTag)
+        return Pair(CONTINUE, identifier)
+    }
+
+    private fun parseElseIfTag(builder: PsiBuilder): Boolean {
+        val marker = builder.mark()
+
+        if (!parseLeafToken(builder, TAG, false)) {
+            marker.drop()
+            return ABORT
+        }
+
+        val identifier = parseTagIdentifier(builder)
+        if (identifier.isEmpty) {
+            marker.drop()
+            return ABORT
+        } else if (!EdgeValidTags.ELSEIF.matches(identifier.get())) {
+            if (!EdgeValidTags.ELSE.matches(identifier.get())
+                && EdgeValidTags.MATCHING_END_TAG_PAIRS[EdgeValidTags.IF]
+                    ?.none { it.matches(identifier.get()) } != false
+            )
+                marker.error(AdonisBundle.message("edge.parsing.element.expected.else_elseif_end_endif"))
+            else marker.rollbackTo()
+            return ABORT
+        }
+
+        if (!parseTagContent(builder, identifier.get())) {
+            marker.drop()
+            return CONTINUE
+        }
+
+        marker.done(INLINE_TAG)
+        return CONTINUE
+    }
+
+    private fun parseElseTag(builder: PsiBuilder): Boolean {
+        val marker = builder.mark()
+
+        if (!parseLeafToken(builder, TAG, false)) {
+            marker.drop()
+            return ABORT
+        }
+
+        val identifier = parseTagIdentifier(builder)
+        if (identifier.isEmpty) {
+            marker.drop()
+            return ABORT
+        } else if (!EdgeValidTags.ELSE.matches(identifier.get())) {
+            if (EdgeValidTags.MATCHING_END_TAG_PAIRS[EdgeValidTags.IF]
+                    ?.none { it.matches(identifier.get()) } != false
+            )
+                marker.error(AdonisBundle.message("edge.parsing.element.expected.else_end_endif"))
+            else marker.rollbackTo()
+            return ABORT
+        }
+
+        marker.done(INLINE_TAG)
+        return CONTINUE
     }
 
     /**
@@ -279,13 +352,15 @@ class EdgeParsing(private val builder: PsiBuilder) {
      * : TAG TAG_IDENTIFIER COMMENT_CONTENT?
      * ;
      */
-    private fun parseCloseTag(builder: PsiBuilder): Boolean {
+    private fun parseCloseTag(builder: PsiBuilder, openingIdentifier: String): Boolean {
         val marker = builder.mark()
+        val matchingEndTagPair = EdgeValidTags.MATCHING_END_TAG_PAIRS[EdgeValidTags.fromString(openingIdentifier)]
 
         if (!parseLeafToken(
-                builder, TAG, true, AdonisBundle.message(
+                builder, TAG, true,
+                AdonisBundle.message(
                     "edge.parsing.element.expected.close_tag",
-                    EdgeValidTags.END_TAGS.joinToString(", ")
+                    (matchingEndTagPair ?: EdgeValidTags.END_TAGS).joinToString(", ")
                 )
             )
         ) {
@@ -299,6 +374,14 @@ class EdgeParsing(private val builder: PsiBuilder) {
             return CONTINUE
         } else if (EdgeValidTags.END_TAGS.none { it.matches(identifier.get()) }) {
             marker.drop()
+            return CONTINUE
+        } else if (matchingEndTagPair != null && matchingEndTagPair.none { it.matches(identifier.get()) }) {
+            marker.error(
+                AdonisBundle.message(
+                    "edge.parsing.element.expected.close_tag",
+                    matchingEndTagPair.joinToString(", ")
+                )
+            )
             return CONTINUE
         }
 
@@ -392,24 +475,6 @@ class EdgeParsing(private val builder: PsiBuilder) {
         parseLeafToken(builder, COMMENT_CONTENT, false)
 
         return CONTINUE
-    }
-
-    /**
-     * HTMLContent
-     * : HTML_CONTENT?
-     * ;
-     */
-    private fun parseHTMLContent(builder: PsiBuilder): Boolean {
-        return parseLeafToken(builder, HTML_CONTENT, false)
-    }
-
-    /**
-     * whiteSpace
-     * : WHITE_SPACE?
-     * ;
-     */
-    private fun parseWhiteSpace(builder: PsiBuilder): Boolean {
-        return parseLeafToken(builder, WHITE_SPACE, false)
     }
 
     /**
