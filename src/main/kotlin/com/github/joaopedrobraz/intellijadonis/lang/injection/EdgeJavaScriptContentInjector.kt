@@ -111,15 +111,6 @@ function include(value) {}
 """
 
 @Language("JavaScript")
-private val IF_FUNCTION = """
-/**
-* @param {boolean} value
-* @private
-*/
-function if(value) {}
-"""
-
-@Language("JavaScript")
 private val SECTION_FUNCTION = """
 /**
 * @param {string} value
@@ -135,15 +126,6 @@ private val LAYOUT_FUNCTION = """
 * @private
 */
 function layout(value) {}
-"""
-
-@Language("JavaScript")
-private val ELSEIF_FUNCTION = """
-/**
-* @param {boolean} value
-* @private
-*/
-function elseif(value) {}
 """
 
 @Language("JavaScript")
@@ -208,12 +190,12 @@ class EdgeJavaScriptContentInjector : MultiHostInjector {
                     addTypingToIncludeTag(result)
                 } else if (EdgeValidTags.IF.matches(wrapper.getIdentifier())) {
                     addTypingToIfTag(result)
+                } else if (EdgeValidTags.ELSEIF.matches(wrapper.getIdentifier())) {
+                    addTypingToIfTag(result)
                 } else if (EdgeValidTags.SECTION.matches(wrapper.getIdentifier())) {
                     addTypingToSectionTag(result)
                 } else if (EdgeValidTags.LAYOUT.matches(wrapper.getIdentifier())) {
                     addTypingToLayoutTag(result)
-                } else if (EdgeValidTags.ELSEIF.matches(wrapper.getIdentifier())) {
-                    addTypingToElsifTag(result)
                 } else if (EdgeValidTags.UNLESS.matches(wrapper.getIdentifier())) {
                     addTypingToUnlessTag(result)
                 } else if (EdgeValidTags.INCLUDE_IF.matches(wrapper.getIdentifier())) {
@@ -284,9 +266,7 @@ class EdgeJavaScriptContentInjector : MultiHostInjector {
     private fun addTypingToIfTag(
         result: MutablePair<String?, String?>
     ) {
-        result.left += "\n{"
-        result.left += IF_FUNCTION
-        result.left += "\nif("
+        result.left += "if("
         result.right += ");\n}"
     }
 
@@ -311,18 +291,6 @@ class EdgeJavaScriptContentInjector : MultiHostInjector {
         result.left += "\n{"
         result.left += LAYOUT_FUNCTION
         result.left += "\nlayout("
-        result.right += ");\n}"
-    }
-
-    /**
-     * "elseif" tags are functions that receives a single boolean argument.
-     */
-    private fun addTypingToElsifTag(
-        result: MutablePair<String?, String?>
-    ) {
-        result.left += "\n{"
-        result.left += ELSEIF_FUNCTION
-        result.left += "\nelseif("
         result.right += ");\n}"
     }
 

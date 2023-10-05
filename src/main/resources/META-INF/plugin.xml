@@ -56,5 +56,6 @@
                         implementationClass="com.github.joaopedrobraz.intellijadonis.format.EdgeFormattingModelBuilder"/>
         <codeFoldingOptionsProvider
                 instance="com.github.joaopedrobraz.intellijadonis.config.EdgeFoldingOptionsProvider"/>
+        <colorSettingsPage implementation="com.github.joaopedrobraz.intellijadonis.pages.EdgeColorsPages"/>
     </extensions>
 </idea-plugin>

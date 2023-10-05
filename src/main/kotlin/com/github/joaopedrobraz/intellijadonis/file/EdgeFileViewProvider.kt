@@ -5,7 +5,6 @@ import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageParserDefinitions
 import com.intellij.lang.html.HTMLLanguage
-import com.intellij.lang.javascript.JavascriptLanguage
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.MultiplePsiFilesPerDocumentFileViewProvider
 import com.intellij.psi.PsiFile

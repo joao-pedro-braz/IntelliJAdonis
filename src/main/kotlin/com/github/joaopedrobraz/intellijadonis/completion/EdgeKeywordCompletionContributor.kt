@@ -10,7 +10,8 @@ import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.project.DumbAware
 
-private val VALID_TAG_PATTERN: Regex = Regex("@(\\s+|$)")
+// From edge.flex
+private val VALID_TAG_PATTERN: Regex = Regex("^@!?[a-zA-Z._]*\\s{0,2}((\\(.*?\\))(\\s*$|\\s*(\\n\\r|\\r|\\n))|(\\(.*?\\))~(\\s*$|\\s*(\\n\\r|\\r|\\n))|(\\([^)]*)(\\s*$|\\s*(\\n\\r|\\r|\\n))|~?(\\s*$|\\s*(\\n\\r|\\r|\\n)))")
 
 class EdgeKeywordCompletionContributor : CompletionContributor(), DumbAware {
 

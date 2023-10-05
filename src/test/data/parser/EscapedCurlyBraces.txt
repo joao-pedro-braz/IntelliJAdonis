@@ -1,0 +1,8 @@
+EdgeFile:EscapedCurlyBraces.edge
+  EdgeStatementsImpl(STATEMENTS)
+    EdgeCommentContentImpl([Edge] COMMENT_CONTENT)
+      PsiElement([Edge] COMMENT_CONTENT)('@{{')
+    EdgeHTMLContentImpl([Edge] HTML_CONTENT)
+      PsiElement([Edge] HTML_CONTENT)(' <div></div> ')
+    EdgeCommentContentImpl([Edge] COMMENT_CONTENT)
+      PsiElement([Edge] COMMENT_CONTENT)('}}')

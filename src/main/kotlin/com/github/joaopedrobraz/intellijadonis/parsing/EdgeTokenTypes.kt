@@ -17,13 +17,7 @@ object EdgeTokenTypes {
     val CURLY_BRACES = EdgeCompositeElementType("CURLY_BRACES")
 
     @JvmField
-    val ESCAPED_CURLY_BRACES = EdgeCompositeElementType("ESCAPED_CURLY_BRACES")
-
-    @JvmField
     val RAW_CURLY_BRACES = EdgeCompositeElementType("RAW_CURLY_BRACES")
-
-    @JvmField
-    val ESCAPED_RAW_CURLY_BRACES = EdgeCompositeElementType("ESCAPED_RAW_CURLY_BRACES")
 
     @JvmField
     val INLINE_TAG = EdgeCompositeElementType("INLINE_TAG")
@@ -53,9 +47,6 @@ object EdgeTokenTypes {
     val KEYWORD = EdgeElementType("KEYWORD", "edge.parsing.element.expected.keyword")
 
     @JvmField
-    val ESCAPED_TAG = EdgeElementType("ESCAPED_TAG", "edge.parsing.element.expected.escaped_tag")
-
-    @JvmField
     val SELF_CLOSING_TAG = EdgeElementType("SELF_CLOSING_TAG", "edge.parsing.element.expected.self_closing_tag")
 
     @JvmField
@@ -68,16 +59,8 @@ object EdgeTokenTypes {
     val OPEN_CURLY_BRACES = EdgeElementType("OPEN_CURLY_BRACES", "edge.parsing.element.expected.open_curly_braces")
 
     @JvmField
-    val ESCAPED_OPEN_CURLY_BRACES =
-        EdgeElementType("ESCAPED_OPEN_CURLY_BRACES", "edge.parsing.element.expected.escaped_open_curly_braces")
-
-    @JvmField
     val OPEN_RAW_CURLY_BRACES =
         EdgeElementType("OPEN_RAW_CURLY_BRACES", "edge.parsing.element.expected.open_raw_curly_braces")
-
-    @JvmField
-    val ESCAPED_OPEN_RAW_CURLY_BRACES =
-        EdgeElementType("ESCAPED_OPEN_RAW_CURLY_BRACES", "edge.parsing.element.expected.escaped_open_raw_curly_braces")
 
     @JvmField
     val CLOSE_CURLY_BRACES = EdgeElementType("CLOSE_CURLY_BRACES", "edge.parsing.element.expected.close_curly_braces")

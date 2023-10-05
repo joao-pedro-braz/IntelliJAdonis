@@ -17,5 +17,5 @@ class EdgeStatementsImpl(astNode: ASTNode) : EdgePsiElementImpl(astNode), EdgeSt
         override fun isRegExpLiteral(): Boolean {
             return false
         }
-    };
+    }
 }

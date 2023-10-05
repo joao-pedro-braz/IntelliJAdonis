@@ -9,8 +9,7 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// suppress various warnings/inspections for the generated class
-@SuppressWarnings ({"FieldCanBeLocal", "UnusedDeclaration", "UnusedAssignment", "WeakerAccess", "SameParameterValue", "CanBeFinal", "SameReturnValue", "RedundantThrows", "ConstantConditions"})
+@SuppressWarnings("ALL")
 %%
 
 %class _EdgeLexer
@@ -28,6 +27,7 @@ import java.util.regex.Pattern;
 
     private int parenthesesCount = 0;
     private IElementType contentToReturn = null;
+    private IElementType matchLastTokenAs = null;
     private String currentTag = "";
 
     private IElementType contentOrWhiteSpace(IElementType _contentToReturn) {
@@ -107,6 +107,15 @@ Content = !([^]*({OpenCurlyBraces}|{OpenRawCurlyBraces}|{OpenEscapedCurlyBraces}
           }
 
           if (!abort) {
+              // Quick short-circuit, if what immediately follows this match is another "@", this is an escaped tag
+              if (zzBufferL.length() > zzMarkedPos && zzBufferL.charAt(zzMarkedPos) == '@') {
+                  yypushback(yylength());
+                  yybegin(YYINITIAL_NO_TAG);
+                  abort = true;
+              }
+          }
+
+          if (!abort) {
               boolean isValid = true;
               // Lookbehind, it must either be the beginning of the file OR a line break, optionally with white space
               if (yylength() > 1) {
@@ -131,7 +140,7 @@ Content = !([^]*({OpenCurlyBraces}|{OpenRawCurlyBraces}|{OpenEscapedCurlyBraces}
               //                       (<CONTENT>*)<EOF|WHITESPACE>
               //                       (<CONTENT>*)~<EOF|WHITESPACE>
               //                       (<CONTENT>*<EOF|WHITESPACE>
-              Pattern pattern = Pattern.compile("^!?[a-zA-Z._]+\\s{0,2}((\\(.*?\\))(\\s*$|\\s*(\\n\\r|\\r|\\n))|(\\(.*?\\))~(\\s*$|\\s*(\\n\\r|\\r|\\n))|(\\([^)]*)(\\s*$|\\s*(\\n\\r|\\r|\\n))|~?(\\s*$|\\s*(\\n\\r|\\r|\\n)))");
+              Pattern pattern = Pattern.compile("^(?<!@)!?[a-zA-Z._]+\\s{0,2}((\\(.*?\\))(\\s*$|\\s*(\\n\\r|\\r|\\n))|(\\(.*?\\))~(\\s*$|\\s*(\\n\\r|\\r|\\n))|(\\([^)]*)(\\s*$|\\s*(\\n\\r|\\r|\\n))|~?(\\s*$|\\s*(\\n\\r|\\r|\\n)))");
               String potentialTag = collectTill(zzBufferL.subSequence(zzMarkedPos, zzBufferL.length()), "\r\n");
               if (potentialTag.isBlank()) {
                   // A solitary tag
@@ -161,26 +170,30 @@ Content = !([^]*({OpenCurlyBraces}|{OpenRawCurlyBraces}|{OpenEscapedCurlyBraces}
 
     {OpenRawCurlyBraces} {
               yybegin(raw_curly_braces);
+              matchLastTokenAs = EdgeTokenTypes.CLOSE_RAW_CURLY_BRACES;
               contentToReturn = EdgeTokenTypes.JAVASCRIPT_CONTENT;
               return EdgeTokenTypes.OPEN_RAW_CURLY_BRACES;
           }
 
     {OpenEscapedRawCurlyBraces} {
               yybegin(raw_curly_braces);
+              matchLastTokenAs = EdgeTokenTypes.COMMENT_CONTENT;
               contentToReturn = EdgeTokenTypes.HTML_CONTENT;
-              return EdgeTokenTypes.ESCAPED_OPEN_RAW_CURLY_BRACES;
+              return EdgeTokenTypes.COMMENT_CONTENT;
           }
 
     {OpenCurlyBraces} {
               yybegin(curly_braces);
+              matchLastTokenAs = EdgeTokenTypes.CLOSE_CURLY_BRACES;
               contentToReturn = EdgeTokenTypes.JAVASCRIPT_CONTENT;
               return EdgeTokenTypes.OPEN_CURLY_BRACES;
           }
 
     {OpenEscapedCurlyBraces} {
               yybegin(curly_braces);
+              matchLastTokenAs = EdgeTokenTypes.COMMENT_CONTENT;
               contentToReturn = EdgeTokenTypes.HTML_CONTENT;
-              return EdgeTokenTypes.ESCAPED_OPEN_CURLY_BRACES;
+              return EdgeTokenTypes.COMMENT_CONTENT;
           }
 
     {OpenComment} { yybegin(comment); return EdgeTokenTypes.OPEN_COMMENT; }
@@ -290,13 +303,13 @@ Content = !([^]*({OpenCurlyBraces}|{OpenRawCurlyBraces}|{OpenEscapedCurlyBraces}
 }
 
 <curly_braces> {
-    "}}" { yybegin(YYINITIAL); return EdgeTokenTypes.CLOSE_CURLY_BRACES; }
+    "}}" { yybegin(YYINITIAL); return matchLastTokenAs; }
     ~"}}" { yypushback(2); return contentOrWhiteSpace(contentToReturn); }
     . { /* If here, we have an unclosed braces */ yypushback(yylength()); yybegin(YYINITIAL); }
 }
 
 <raw_curly_braces> {
-    "}}}" { yybegin(YYINITIAL); return EdgeTokenTypes.CLOSE_RAW_CURLY_BRACES; }
+    "}}}" { yybegin(YYINITIAL); return matchLastTokenAs; }
     ~"}}}" { yypushback(3); return contentOrWhiteSpace(contentToReturn); }
     . { /* If here, we have an unclosed braces */ yypushback(yylength()); yybegin(YYINITIAL); }
 }

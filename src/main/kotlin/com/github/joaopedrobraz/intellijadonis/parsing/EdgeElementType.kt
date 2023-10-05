@@ -32,6 +32,12 @@ class EdgeElementType(
         return debugName === other.debugName
     }
 
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + debugName.hashCode()
+        return result
+    }
+
     fun parseExpectedMessage(): String =
         AdonisBundle.message(expectedMessageKey, *params)
 

@@ -14,8 +14,6 @@ class EdgeBraceMatcher : BraceMatcher {
         val LEFT_BRACES = setOf(
             EdgeTokenTypes.OPEN_CURLY_BRACES,
             EdgeTokenTypes.OPEN_RAW_CURLY_BRACES,
-            EdgeTokenTypes.ESCAPED_OPEN_CURLY_BRACES,
-            EdgeTokenTypes.ESCAPED_OPEN_RAW_CURLY_BRACES,
             EdgeTokenTypes.OPEN_PARENTHESES
         )
 
@@ -23,17 +21,11 @@ class EdgeBraceMatcher : BraceMatcher {
         val RIGHT_BRACES = mapOf(
             Pair(
                 EdgeTokenTypes.CLOSE_CURLY_BRACES,
-                arrayOf(
-                    EdgeTokenTypes.OPEN_CURLY_BRACES,
-                    EdgeTokenTypes.ESCAPED_OPEN_CURLY_BRACES
-                )
+                EdgeTokenTypes.OPEN_CURLY_BRACES,
             ),
             Pair(
                 EdgeTokenTypes.CLOSE_RAW_CURLY_BRACES,
-                arrayOf(
-                    EdgeTokenTypes.OPEN_RAW_CURLY_BRACES,
-                    EdgeTokenTypes.ESCAPED_OPEN_RAW_CURLY_BRACES
-                )
+                EdgeTokenTypes.OPEN_RAW_CURLY_BRACES,
             ),
             Pair(EdgeTokenTypes.CLOSE_PARENTHESES, arrayOf(EdgeTokenTypes.OPEN_PARENTHESES))
         )
@@ -47,7 +39,7 @@ class EdgeBraceMatcher : BraceMatcher {
     override fun isRBraceToken(iterator: HighlighterIterator, fileText: CharSequence, fileType: FileType): Boolean {
         if (!MatchingBraces.RIGHT_BRACES.contains(iterator.tokenType)) return false
 
-        val possibleOpeners = MatchingBraces.RIGHT_BRACES[iterator.tokenType] ?: return false
+        val opener = MatchingBraces.RIGHT_BRACES[iterator.tokenType] ?: return false
         var iteratorRetreatCount = 0
         var isRBraceToken = false
         while (true) {
@@ -56,7 +48,7 @@ class EdgeBraceMatcher : BraceMatcher {
 
             if (iterator.atEnd()) break
 
-            if (possibleOpeners.any { iterator.tokenType == it }) {
+            if (iterator.tokenType == opener) {
                 isRBraceToken = true
                 break
             }

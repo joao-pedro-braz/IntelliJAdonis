@@ -24,9 +24,9 @@ enum class Property {
     };
 
     companion object {
-        val ENABLED = "enabled"
+        const val ENABLED = "enabled"
 
-        val DISABLED = "disabled"
+        const val DISABLED = "disabled"
     }
 
     /**

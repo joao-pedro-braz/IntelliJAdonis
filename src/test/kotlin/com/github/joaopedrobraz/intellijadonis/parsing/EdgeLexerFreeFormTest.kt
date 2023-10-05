@@ -5,8 +5,6 @@ import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.CLOSE_CURL
 import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.CLOSE_PARENTHESES
 import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.CLOSE_RAW_CURLY_BRACES
 import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.COMMENT_CONTENT
-import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.ESCAPED_OPEN_CURLY_BRACES
-import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.ESCAPED_OPEN_RAW_CURLY_BRACES
 import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.HTML_CONTENT
 import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.IDENTIFIER
 import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.JAVASCRIPT_CONTENT
@@ -68,6 +66,12 @@ class EdgeLexerFreeFormTest : EdgeLexerTest() {
         result.shouldMatchTokenContent("@@", "if(false)")
     }
 
+    fun testEscapedTagAroundContent() {
+        val result = tokenize("<div>@@if(false)</div>")
+        result.shouldMatchTokenTypes(HTML_CONTENT, HTML_CONTENT, HTML_CONTENT)
+        result.shouldMatchTokenContent("<div>", "@@", "if(false)</div>")
+    }
+
     fun testCurlyBraces() {
         val result = tokenize("{{something}}")
         result.shouldMatchTokenTypes(OPEN_CURLY_BRACES, JAVASCRIPT_CONTENT, CLOSE_CURLY_BRACES)
@@ -76,7 +80,7 @@ class EdgeLexerFreeFormTest : EdgeLexerTest() {
 
     fun testEscapedCurlyBraces() {
         val result = tokenize("@{{something}}")
-        result.shouldMatchTokenTypes(ESCAPED_OPEN_CURLY_BRACES, HTML_CONTENT, CLOSE_CURLY_BRACES)
+        result.shouldMatchTokenTypes(COMMENT_CONTENT, HTML_CONTENT, COMMENT_CONTENT)
         result.shouldMatchTokenContent("@{{", "something", "}}")
     }
 
@@ -88,7 +92,7 @@ class EdgeLexerFreeFormTest : EdgeLexerTest() {
 
     fun testEscapedRawCurlyBraces() {
         val result = tokenize("@{{{something}}}")
-        result.shouldMatchTokenTypes(ESCAPED_OPEN_RAW_CURLY_BRACES, HTML_CONTENT, CLOSE_RAW_CURLY_BRACES)
+        result.shouldMatchTokenTypes(COMMENT_CONTENT, HTML_CONTENT, COMMENT_CONTENT)
         result.shouldMatchTokenContent("@{{{", "something", "}}}")
     }
 

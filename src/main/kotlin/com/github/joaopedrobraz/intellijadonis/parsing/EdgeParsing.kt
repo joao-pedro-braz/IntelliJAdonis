@@ -9,11 +9,6 @@ import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.CLOSE_RAW_
 import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.COMMENT
 import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.COMMENT_CONTENT
 import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.CURLY_BRACES
-import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.ESCAPED_CURLY_BRACES
-import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.ESCAPED_OPEN_CURLY_BRACES
-import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.ESCAPED_OPEN_RAW_CURLY_BRACES
-import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.ESCAPED_RAW_CURLY_BRACES
-import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.ESCAPED_TAG
 import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.HTML_CONTENT
 import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.IDENTIFIER
 import com.github.joaopedrobraz.intellijadonis.parsing.EdgeTokenTypes.INLINE_TAG
@@ -43,11 +38,8 @@ class EdgeParsing(private val builder: PsiBuilder) {
     companion object {
         val RECOVERY_SET = setOf(
             TAG,
-            ESCAPED_TAG,
             OPEN_CURLY_BRACES,
-            ESCAPED_CURLY_BRACES,
             OPEN_RAW_CURLY_BRACES,
-            ESCAPED_RAW_CURLY_BRACES,
             OPEN_COMMENT,
             HTML_CONTENT,
         )
@@ -195,11 +187,7 @@ class EdgeParsing(private val builder: PsiBuilder) {
 
         if (tokenType == OPEN_CURLY_BRACES) return parseCurlyBraces(builder)
 
-        if (tokenType == ESCAPED_OPEN_CURLY_BRACES) return parseEscapedCurlyBraces(builder)
-
         if (tokenType == OPEN_RAW_CURLY_BRACES) return parseRawCurlyBraces(builder)
-
-        if (tokenType == ESCAPED_OPEN_RAW_CURLY_BRACES) return parseEscapedRawCurlyBraces(builder)
 
         if (tokenType == OPEN_COMMENT) return parseComment(builder)
 
@@ -514,46 +502,6 @@ class EdgeParsing(private val builder: PsiBuilder) {
         parseLeafTokenGreedy(builder, CLOSE_RAW_CURLY_BRACES)
 
         marker.done(RAW_CURLY_BRACES)
-        return CONTINUE
-    }
-
-    /**
-     * escapedCurlyBraces
-     * : ESCAPED_OPEN_CURLY_BRACES HTML_CONTENT? CLOSE_CURLY_BRACES
-     * ;
-     */
-    private fun parseEscapedCurlyBraces(builder: PsiBuilder): Boolean {
-        val marker = builder.mark()
-
-        if (!parseLeafToken(builder, ESCAPED_OPEN_CURLY_BRACES)) {
-            marker.rollbackTo()
-            return ABORT
-        }
-
-        parseLeafToken(builder, HTML_CONTENT, false)
-        parseLeafTokenGreedy(builder, CLOSE_CURLY_BRACES)
-
-        marker.done(ESCAPED_CURLY_BRACES)
-        return CONTINUE
-    }
-
-    /**
-     * escapedRawCurlyBraces
-     * : ESCAPED_OPEN_RAW_CURLY_BRACES HTML_CONTENT? CLOSE_RAW_CURLY_BRACES
-     * ;
-     */
-    private fun parseEscapedRawCurlyBraces(builder: PsiBuilder): Boolean {
-        val marker = builder.mark()
-
-        if (!parseLeafToken(builder, ESCAPED_OPEN_RAW_CURLY_BRACES)) {
-            marker.rollbackTo()
-            return ABORT
-        }
-
-        parseLeafToken(builder, HTML_CONTENT, false)
-        parseLeafTokenGreedy(builder, CLOSE_RAW_CURLY_BRACES)
-
-        marker.done(ESCAPED_RAW_CURLY_BRACES)
         return CONTINUE
     }
 

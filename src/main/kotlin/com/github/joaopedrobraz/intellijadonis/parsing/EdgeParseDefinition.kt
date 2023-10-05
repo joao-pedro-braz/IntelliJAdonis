@@ -12,12 +12,10 @@ import com.intellij.psi.stubs.PsiFileStub
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.IStubFileElementType
 
-class EdgeParseDefinition : ParserDefinition {
+private val FILE_ELEMENT_TYPE: IFileElementType =
+    IStubFileElementType<PsiFileStub<*>>("edge", EdgeLanguage.INSTANCE)
 
-    companion object {
-        private val FILE_ELEMENT_TYPE: IFileElementType =
-            IStubFileElementType<PsiFileStub<*>>("edge", EdgeLanguage.INSTANCE)
-    }
+class EdgeParseDefinition : ParserDefinition {
 
     override fun createLexer(project: Project?) = EdgeLexer()
 
@@ -80,18 +78,6 @@ class EdgeParseDefinition : ParserDefinition {
 
         if (elementType == EdgeTokenTypes.CLOSE_PARENTHESES) {
             return EdgeCloseParenthesesImpl(node)
-        }
-
-        if (elementType == EdgeTokenTypes.ESCAPED_TAG) {
-            return EdgeEscapedTagImpl(node)
-        }
-
-        if (elementType == EdgeTokenTypes.ESCAPED_CURLY_BRACES) {
-            return EdgeEscapedCurlyBracesImpl(node)
-        }
-
-        if (elementType == EdgeTokenTypes.ESCAPED_RAW_CURLY_BRACES) {
-            return EdgeEscapedRawCurlyBracesImpl(node)
         }
 
         if (elementType == EdgeTokenTypes.JAVASCRIPT_CONTENT) {

@@ -12,9 +12,7 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// suppress various warnings/inspections for the generated class
-@SuppressWarnings ({"FieldCanBeLocal", "UnusedDeclaration", "UnusedAssignment", "WeakerAccess", "SameParameterValue", "CanBeFinal", "SameReturnValue", "RedundantThrows", "ConstantConditions"})
-
+@SuppressWarnings("ALL")
 final class _EdgeLexer implements FlexLexer {
 
   /** This character denotes the end of file */
@@ -318,9 +316,9 @@ final class _EdgeLexer implements FlexLexer {
     "\1\20\2\2\2\21\1\1\1\4\1\1\1\3\1\1"+
     "\1\22\1\0\1\23\2\6\2\24\2\0\1\25\2\0"+
     "\1\26\6\0\1\1\1\23\1\0\1\27\1\0\1\30"+
-    "\2\24\1\0\2\31\1\0\1\32\3\0\1\30\1\33"+
-    "\1\34\2\24\1\35\2\36\1\0\1\37\1\34\1\36"+
-    "\1\40";
+    "\2\24\1\0\2\31\1\0\1\26\3\0\1\30\1\32"+
+    "\1\33\2\24\1\34\2\35\1\0\1\36\1\33\1\35"+
+    "\1\37";
 
   private static int [] zzUnpackAction() {
     int [] result = new int[105];
@@ -553,6 +551,7 @@ final class _EdgeLexer implements FlexLexer {
 
     private int parenthesesCount = 0;
     private IElementType contentToReturn = null;
+    private IElementType matchLastTokenAs = null;
     private String currentTag = "";
 
     private IElementType contentOrWhiteSpace(IElementType _contentToReturn) {
@@ -831,12 +830,12 @@ final class _EdgeLexer implements FlexLexer {
           return contentOrWhiteSpace();
             }
           // fall through
-          case 33: break;
+          case 32: break;
           case 2:
             { return contentOrWhiteSpace();
             }
           // fall through
-          case 34: break;
+          case 33: break;
           case 3:
             { boolean abort = false;
           // Lookbehind, there must not be any of the "invalidTokens"
@@ -849,6 +848,15 @@ final class _EdgeLexer implements FlexLexer {
                   yybegin(YYINITIAL_NO_TAG);
                   abort = true;
                   break;
+              }
+          }
+
+          if (!abort) {
+              // Quick short-circuit, if what immediately follows this match is another "@", this is an escaped tag
+              if (zzBufferL.length() > zzMarkedPos && zzBufferL.charAt(zzMarkedPos) == '@') {
+                  yypushback(yylength());
+                  yybegin(YYINITIAL_NO_TAG);
+                  abort = true;
               }
           }
 
@@ -877,7 +885,7 @@ final class _EdgeLexer implements FlexLexer {
               //                       (<CONTENT>*)<EOF|WHITESPACE>
               //                       (<CONTENT>*)~<EOF|WHITESPACE>
               //                       (<CONTENT>*<EOF|WHITESPACE>
-              Pattern pattern = Pattern.compile("^!?[a-zA-Z._]+\\s{0,2}((\\(.*?\\))(\\s*$|\\s*(\\n\\r|\\r|\\n))|(\\(.*?\\))~(\\s*$|\\s*(\\n\\r|\\r|\\n))|(\\([^)]*)(\\s*$|\\s*(\\n\\r|\\r|\\n))|~?(\\s*$|\\s*(\\n\\r|\\r|\\n)))");
+              Pattern pattern = Pattern.compile("^(?<!@)!?[a-zA-Z._]+\\s{0,2}((\\(.*?\\))(\\s*$|\\s*(\\n\\r|\\r|\\n))|(\\(.*?\\))~(\\s*$|\\s*(\\n\\r|\\r|\\n))|(\\([^)]*)(\\s*$|\\s*(\\n\\r|\\r|\\n))|~?(\\s*$|\\s*(\\n\\r|\\r|\\n)))");
               String potentialTag = collectTill(zzBufferL.subSequence(zzMarkedPos, zzBufferL.length()), "\r\n");
               if (potentialTag.isBlank()) {
                   // A solitary tag
@@ -901,22 +909,22 @@ final class _EdgeLexer implements FlexLexer {
           }
             }
           // fall through
-          case 35: break;
+          case 34: break;
           case 4:
             { return EdgeTokenTypes.INVALID;
             }
           // fall through
-          case 36: break;
+          case 35: break;
           case 5:
             { return EdgeTokenTypes.WHITE_SPACE;
             }
           // fall through
-          case 37: break;
+          case 36: break;
           case 6:
             { yybegin(YYINITIAL); clearWhiteSpace(); return EdgeTokenTypes.TAG;
             }
           // fall through
-          case 38: break;
+          case 37: break;
           case 7:
             { if (parenthesesCount == 0) {
                   clearWhiteSpace();
@@ -945,12 +953,12 @@ final class _EdgeLexer implements FlexLexer {
               }
             }
           // fall through
-          case 39: break;
+          case 38: break;
           case 8:
             { yypushback(yylength()); yybegin(YYINITIAL);
             }
           // fall through
-          case 40: break;
+          case 39: break;
           case 9:
             { int matchedChars = 0;
               for (int i = 0; i < yylength(); i++) {
@@ -964,22 +972,22 @@ final class _EdgeLexer implements FlexLexer {
               return EdgeTokenTypes.IDENTIFIER;
             }
           // fall through
-          case 41: break;
+          case 40: break;
           case 10:
             { return EdgeTokenTypes.OPEN_PARENTHESES;
             }
           // fall through
-          case 42: break;
+          case 41: break;
           case 11:
             { return EdgeTokenTypes.CLOSE_PARENTHESES;
             }
           // fall through
-          case 43: break;
+          case 42: break;
           case 12:
             { yypushback(1); yybegin(YYINITIAL);
             }
           // fall through
-          case 44: break;
+          case 43: break;
           case 13:
             { yypushback(yylength() - 1);
           yybegin(CUSTOM_TAG_BEHAVIOR.getOrDefault(EdgeValidTags.fromString(currentTag), tag_content));
@@ -987,41 +995,42 @@ final class _EdgeLexer implements FlexLexer {
           return EdgeTokenTypes.OPEN_PARENTHESES;
             }
           // fall through
-          case 45: break;
+          case 44: break;
           case 14:
             { clearWhiteSpace();
               currentTag = yytext().toString();
               return EdgeTokenTypes.IDENTIFIER;
             }
           // fall through
-          case 46: break;
+          case 45: break;
           case 15:
             { yypushback(1); yybegin(swallow_new_line);
             }
           // fall through
-          case 47: break;
+          case 46: break;
           case 16:
             { /* If here, we have an unclosed braces */ yypushback(yylength()); yybegin(YYINITIAL);
             }
           // fall through
-          case 48: break;
+          case 47: break;
           case 17:
             { yybegin(YYINITIAL); return EdgeTokenTypes.COMMENT_CONTENT;
             }
           // fall through
-          case 49: break;
+          case 48: break;
           case 18:
             { return EdgeTokenTypes.HTML_CONTENT;
             }
           // fall through
-          case 50: break;
+          case 49: break;
           case 19:
             { yybegin(curly_braces);
+              matchLastTokenAs = EdgeTokenTypes.CLOSE_CURLY_BRACES;
               contentToReturn = EdgeTokenTypes.JAVASCRIPT_CONTENT;
               return EdgeTokenTypes.OPEN_CURLY_BRACES;
             }
           // fall through
-          case 51: break;
+          case 50: break;
           case 20:
             { yybegin(tag_identifier);
           if (yytext().toString().startsWith("@!")) {
@@ -1033,73 +1042,71 @@ final class _EdgeLexer implements FlexLexer {
           }
             }
           // fall through
-          case 52: break;
+          case 51: break;
           case 21:
             { yypushback(1); yybegin(swallow_new_line); return EdgeTokenTypes.CLOSE_PARENTHESES;
             }
           // fall through
-          case 53: break;
+          case 52: break;
           case 22:
-            { yybegin(YYINITIAL); return EdgeTokenTypes.CLOSE_CURLY_BRACES;
+            { yybegin(YYINITIAL); return matchLastTokenAs;
+            }
+          // fall through
+          case 53: break;
+          case 23:
+            { yybegin(curly_braces);
+              matchLastTokenAs = EdgeTokenTypes.COMMENT_CONTENT;
+              contentToReturn = EdgeTokenTypes.HTML_CONTENT;
+              return EdgeTokenTypes.COMMENT_CONTENT;
             }
           // fall through
           case 54: break;
-          case 23:
-            { yybegin(curly_braces);
-              contentToReturn = EdgeTokenTypes.HTML_CONTENT;
-              return EdgeTokenTypes.ESCAPED_OPEN_CURLY_BRACES;
-            }
-          // fall through
-          case 55: break;
           case 24:
             { yybegin(raw_curly_braces);
+              matchLastTokenAs = EdgeTokenTypes.CLOSE_RAW_CURLY_BRACES;
               contentToReturn = EdgeTokenTypes.JAVASCRIPT_CONTENT;
               return EdgeTokenTypes.OPEN_RAW_CURLY_BRACES;
             }
           // fall through
-          case 56: break;
+          case 55: break;
           case 25:
             { yypushback(2); return contentOrWhiteSpace(contentToReturn);
             }
           // fall through
-          case 57: break;
+          case 56: break;
           case 26:
-            { yybegin(YYINITIAL); return EdgeTokenTypes.CLOSE_RAW_CURLY_BRACES;
-            }
-          // fall through
-          case 58: break;
-          case 27:
             { yybegin(raw_curly_braces);
+              matchLastTokenAs = EdgeTokenTypes.COMMENT_CONTENT;
               contentToReturn = EdgeTokenTypes.HTML_CONTENT;
-              return EdgeTokenTypes.ESCAPED_OPEN_RAW_CURLY_BRACES;
+              return EdgeTokenTypes.COMMENT_CONTENT;
             }
           // fall through
-          case 59: break;
-          case 28:
+          case 57: break;
+          case 27:
             { yybegin(comment); return EdgeTokenTypes.OPEN_COMMENT;
             }
           // fall through
-          case 60: break;
-          case 29:
+          case 58: break;
+          case 28:
             { yybegin(tag_content); return EdgeTokenTypes.KEYWORD;
             }
           // fall through
-          case 61: break;
-          case 30:
+          case 59: break;
+          case 29:
             { yypushback(3); return contentOrWhiteSpace(contentToReturn);
             }
           // fall through
-          case 62: break;
-          case 31:
+          case 60: break;
+          case 30:
             { yybegin(YYINITIAL); return EdgeTokenTypes.CLOSE_COMMENT;
             }
           // fall through
-          case 63: break;
-          case 32:
+          case 61: break;
+          case 31:
             { yypushback(4); return contentOrWhiteSpace(EdgeTokenTypes.COMMENT_CONTENT);
             }
           // fall through
-          case 64: break;
+          case 62: break;
           default:
             zzScanError(ZZ_NO_MATCH);
           }
